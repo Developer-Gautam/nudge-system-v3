@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import { useNotification } from '../contexts/NotificationContext'
 import './QuestionForm.css'
 
 const QuestionForm = () => {
@@ -9,11 +10,12 @@ const QuestionForm = () => {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const [showNudge, setShowNudge] = useState(false)
+
   const [progress, setProgress] = useState(null)
   const [completed, setCompleted] = useState(false)
   
   const navigate = useNavigate()
+  const { showNudgeNotification, hideNudgeNotification } = useNotification()
   const inactivityTimer = useRef(null)
   const nudgeTimer = useRef(null)
   const currentQuestionId = useRef(null)
@@ -23,7 +25,7 @@ const QuestionForm = () => {
     fetchCurrentQuestion()
   }, [])
 
-  // Separate useEffect for inactivity detection (runs on mount and when showNudge changes)
+  // Separate useEffect for inactivity detection (runs on mount)
   useEffect(() => {
     // Set up inactivity detection
     const resetInactivityTimer = () => {
@@ -33,19 +35,15 @@ const QuestionForm = () => {
       
       // Start 1-minute inactivity timer
       inactivityTimer.current = setTimeout(() => {
-        setShowNudge(true)
+        showNudgeNotification()
         scheduleNudge()
       }, 60000) // 1 minute
     }
 
-    // Reset timer on user activity
+    // Reset timer on user activity (but don't dismiss nudge)
     const handleActivity = () => {
-      if (showNudge) {
-        setShowNudge(false)
-        if (nudgeTimer.current) {
-          clearTimeout(nudgeTimer.current)
-        }
-      }
+      // Only reset the inactivity timer, don't dismiss the nudge
+      // The nudge should only be dismissed when user clicks the button
       resetInactivityTimer()
     }
 
@@ -71,7 +69,7 @@ const QuestionForm = () => {
       document.removeEventListener('click', handleActivity)
       document.removeEventListener('scroll', handleActivity)
     }
-  }, [showNudge])
+  }, [])
 
   const fetchCurrentQuestion = async () => {
     try {
@@ -139,18 +137,24 @@ const QuestionForm = () => {
   }
 
   const handleSkip = () => {
-    setShowNudge(false)
+    // Dismiss the nudge
+    hideNudgeNotification()
+    
+    // Clear any existing nudge timer
     if (nudgeTimer.current) {
       clearTimeout(nudgeTimer.current)
     }
-    // Reset inactivity timer
+    
+    // Reset the inactivity timer for the next nudge
     if (inactivityTimer.current) {
       clearTimeout(inactivityTimer.current)
-      inactivityTimer.current = setTimeout(() => {
-        setShowNudge(true)
-        scheduleNudge()
-      }, 60000)
     }
+    
+    // Start a new inactivity timer
+    inactivityTimer.current = setTimeout(() => {
+      showNudgeNotification()
+      scheduleNudge()
+    }, 60000) // 1 minute
   }
 
   if (loading) {
@@ -180,19 +184,6 @@ const QuestionForm = () => {
 
   return (
     <div className="question-container">
-      {showNudge && (
-        <div className="nudge-overlay">
-          <div className="nudge-card">
-            <h3>👋 Still there?</h3>
-            <p>Don't forget to answer your question! Take a moment to continue.</p>
-            <div className="nudge-actions">
-              <button onClick={handleSkip} className="btn btn-secondary">
-                I'm here, thanks!
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="question-header">
         <div className="progress-info">
