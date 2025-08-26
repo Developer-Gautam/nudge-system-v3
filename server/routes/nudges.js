@@ -30,8 +30,29 @@ router.post('/schedule', async (req, res) => {
       return res.status(400).json({ error: 'Question progress not found' });
     }
 
-    // Calculate delay for next nudge
-    const delayMinutes = calculateNudgeDelay(questionProgress.nudgeCount);
+
+    // Prevent duplicate nudge scheduling for the same user/question
+    const existingPendingNudge = await Nudge.findOne({
+      userId: user._id,
+      questionId: nextQuestionId,
+      status: 'scheduled'
+    });
+    if (existingPendingNudge) {
+      return res.status(200).json({
+        message: 'A nudge is already scheduled for this question.',
+        nudge: {
+          id: existingPendingNudge._id,
+          scheduledFor: existingPendingNudge.scheduledFor,
+          delayMinutes: existingPendingNudge.delayMinutes,
+          message: existingPendingNudge.message,
+          nudgeCount: existingPendingNudge.nudgeCount
+        }
+      });
+    }
+
+    // Calculate delay for next nudge (use incremented nudgeCount for correct exponential backoff)
+    const nextNudgeCount = questionProgress.nudgeCount + 1;
+    const delayMinutes = calculateNudgeDelay(nextNudgeCount);
     
     if (delayMinutes === null) {
       // Mark user as inactive after max nudges

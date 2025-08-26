@@ -15,11 +15,11 @@ const awsConfig = {
 };
 
 // Debug: Check if credentials are loaded
-console.log('AWS Configuration Debug:');
-console.log('Region:', process.env.AWS_REGION);
-console.log('Access Key ID exists:', !!process.env.AWS_ACCESS_KEY_ID);
-console.log('Secret Access Key exists:', !!process.env.AWS_SECRET_ACCESS_KEY);
-console.log('SQS Queue URL exists:', !!process.env.SQS_QUEUE_URL);
+// console.log('AWS Configuration Debug:');
+// console.log('Region:', process.env.AWS_REGION);
+// console.log('Access Key ID exists:', !!process.env.AWS_ACCESS_KEY_ID);
+// console.log('Secret Access Key exists:', !!process.env.AWS_SECRET_ACCESS_KEY);
+// console.log('SQS Queue URL exists:', !!process.env.SQS_QUEUE_URL);
 console.log('EventBridge Bus Name:', process.env.EVENTBRIDGE_BUS_NAME || 'default');
 
 // Initialize AWS clients
@@ -50,7 +50,7 @@ const EVENTBRIDGE_BUS_NAME = process.env.EVENTBRIDGE_BUS_NAME || 'default';
 
 // Nudge configuration
 const NUDGE_CONFIG = {
-  initialDelayMinutes: 1, // Initial delay before first nudge
+  initialDelayMinutes: 0.1667, // Initial delay before first nudge (10 seconds)
   exponentialMultiplier: 2, // Multiplier for exponential backoff
   maxNudges: 20, // Maximum number of nudges (A × X²⁰)
   nudgeMessages: [
@@ -69,6 +69,7 @@ const NUDGE_CONFIG = {
 
 // SQS Functions
 const sendNudgeMessage = async (nudgeData) => {
+  console.log('Sending SQS message with data:', nudgeData);
   try {
     const command = new SendMessageCommand({
       QueueUrl: SQS_QUEUE_URL,
@@ -100,6 +101,7 @@ const deleteNudgeMessage = async (receiptHandle) => {
 
 // EventBridge Functions
 const scheduleNudgeEvent = async (nudgeData) => {
+  console.log('Scheduling nudge event with data:', nudgeData);
   try {
     console.log('Attempting to schedule EventBridge event with data:', nudgeData);
     
@@ -123,8 +125,8 @@ const scheduleNudgeEvent = async (nudgeData) => {
     console.log('Rule created successfully:', ruleResponse);
 
     // Create target
-    console.log('SQS Queue URL:', SQS_QUEUE_URL);
-    console.log('SQS Queue ARN:', SQS_QUEUE_ARN);
+    // console.log('SQS Queue URL:', SQS_QUEUE_URL);
+    // console.log('SQS Queue ARN:', SQS_QUEUE_ARN);
     
     const putTargetsCommand = new PutTargetsCommand({
       Rule: ruleName,
@@ -136,7 +138,9 @@ const scheduleNudgeEvent = async (nudgeData) => {
       }]
     });
 
-    console.log('Sending PutTargetsCommand...');
+    // console.log('Sending PutTargetsCommand...', putTargetsCommand);
+    console.log("PutTargetsCommand Input:", JSON.stringify(putTargetsCommand.input, null, 2));
+
     await eventBridgeClient.send(putTargetsCommand);
     console.log('Target created successfully');
 
@@ -186,6 +190,7 @@ const calculateNudgeDelay = (nudgeCount) => {
   }
   
   const delayMinutes = NUDGE_CONFIG.initialDelayMinutes * Math.pow(NUDGE_CONFIG.exponentialMultiplier, nudgeCount);
+  console.log(delayMinutes, "delayMinutes");
   return Math.min(delayMinutes, 1440); // Cap at 24 hours (1440 minutes)
 };
 
