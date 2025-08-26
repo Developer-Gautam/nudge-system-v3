@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const { testAWSCredentials } = require('./config/aws');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -50,6 +51,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
+  
+  // Test AWS credentials on startup
+  try {
+    await testAWSCredentials();
+  } catch (error) {
+    console.error('AWS credentials test failed on startup:', error.message);
+  }
 });
