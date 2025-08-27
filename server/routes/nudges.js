@@ -50,9 +50,11 @@ router.post('/schedule', async (req, res) => {
       });
     }
 
-    // Calculate delay for next nudge (use incremented nudgeCount for correct exponential backoff)
-    const nextNudgeCount = questionProgress.nudgeCount + 1;
-    const delayMinutes = calculateNudgeDelay(nextNudgeCount);
+  // Calculate delay for next nudge (use incremented nudgeCount for correct exponential backoff)
+  const nextNudgeCount = questionProgress.nudgeCount + 1;
+  let delayMinutes = calculateNudgeDelay(nextNudgeCount);
+  // Ensure minimum delay for EventBridge is 1 minute
+  if (delayMinutes < 1) delayMinutes = 1;
     
     if (delayMinutes === null) {
       // Mark user as inactive after max nudges
@@ -71,12 +73,12 @@ router.post('/schedule', async (req, res) => {
     const scheduledFor = new Date(Date.now() + delayMinutes * 60 * 1000);
     
     const nudgeData = {
-      userId: user._id.toString(),
-      questionId: nextQuestionId,
-      nudgeCount: questionProgress.nudgeCount + 1,
-      delayMinutes,
-      message: nudgeMessage,
-      scheduledFor
+  userId: user._id.toString(),
+  questionId: nextQuestionId,
+  nudgeCount: nextNudgeCount,
+  delayMinutes,
+  message: nudgeMessage,
+  scheduledFor
     };
 
     // Schedule with EventBridge

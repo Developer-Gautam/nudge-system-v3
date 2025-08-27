@@ -37,7 +37,7 @@ const QuestionForm = () => {
       inactivityTimer.current = setTimeout(() => {
         showNudgeNotification()
         scheduleNudge()
-      }, 10000) // 10 seconds
+      }, 60000) // 1 minute
     }
 
     // Reset timer on user activity (but don't dismiss nudge)
@@ -55,7 +55,7 @@ const QuestionForm = () => {
 
     // Start initial timer
     resetInactivityTimer()
-
+console.log("cheking for inactivity timer")
     return () => {
       // Cleanup
       if (inactivityTimer.current) {
@@ -154,7 +154,7 @@ const QuestionForm = () => {
     inactivityTimer.current = setTimeout(() => {
       showNudgeNotification()
       scheduleNudge()
-    }, 10000) // 10 seconds
+    }, 60000) // 1 minute
   }
 
   if (loading) {
@@ -242,3 +242,9 @@ const QuestionForm = () => {
 }
 
 export default QuestionForm
+
+
+
+
+
+

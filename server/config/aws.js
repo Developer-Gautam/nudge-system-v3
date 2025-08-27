@@ -113,9 +113,18 @@ const scheduleNudgeEvent = async (nudgeData) => {
     // Create EventBridge rule
     // EventBridge rate expression format: rate(value unit)
     // Valid units: minute, minutes, hour, hours, day, days
+    // Use seconds for sub-minute delays, minutes otherwise
+    let scheduleExpr;
+    if (nudgeData.delayMinutes < 1) {
+      const delaySeconds = Math.round(nudgeData.delayMinutes * 60);
+      scheduleExpr = `rate(${delaySeconds} second${delaySeconds === 1 ? '' : 's'})`;
+    } else {
+      const delayMinutes = Math.round(nudgeData.delayMinutes);
+      scheduleExpr = `rate(${delayMinutes} minute${delayMinutes === 1 ? '' : 's'})`;
+    }
     const putRuleCommand = new PutRuleCommand({
       Name: ruleName,
-      ScheduleExpression: `rate(${nudgeData.delayMinutes} minute${nudgeData.delayMinutes > 1 ? 's' : ''})`,
+      ScheduleExpression: scheduleExpr,
       State: 'ENABLED',
       EventBusName: EVENTBRIDGE_BUS_NAME
     });

@@ -25,6 +25,9 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+app.options('*', cors());
+
 app.use(express.json());
 
 // Database connection
@@ -33,7 +36,6 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/nudge-sys
 .catch(err => console.error('MongoDB connection error:', err));
 
 // Handle preflight requests
-app.options('*', cors());
 
 // Routes
 app.use('/api/auth', authRoutes);

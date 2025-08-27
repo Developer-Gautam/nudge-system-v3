@@ -1,3 +1,21 @@
+/* Enable scrolling for notification dropdown/panel */
+.notification-dropdown, .notification-panel {
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin; /* Firefox */
+}
+
+/* Chrome, Edge, Safari */
+.notification-dropdown::-webkit-scrollbar,
+.notification-panel::-webkit-scrollbar {
+  width: 6px;
+}
+.notification-dropdown::-webkit-scrollbar-thumb,
+.notification-panel::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+  
 .navbar {
   background: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -160,6 +178,7 @@
   z-index: 1000;
   margin-top: 8px;
   border: 1px solid #e2e8f0;
+  overflow-y: scroll;
 }
 
 .notification-header {
