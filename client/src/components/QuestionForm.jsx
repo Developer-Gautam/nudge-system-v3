@@ -140,6 +140,17 @@ console.log("cheking for inactivity timer")
     // Dismiss the nudge
     hideNudgeNotification()
     
+    // Cancel scheduled nudge on backend
+    if (currentQuestionId.current) {
+      axios.post('/nudges/cancel', { questionId: currentQuestionId.current })
+        .then(() => {
+          console.log('Nudge cancelled on backend')
+        })
+        .catch((err) => {
+          console.error('Error cancelling nudge:', err)
+        })
+    }
+    
     // Clear any existing nudge timer
     if (nudgeTimer.current) {
       clearTimeout(nudgeTimer.current)

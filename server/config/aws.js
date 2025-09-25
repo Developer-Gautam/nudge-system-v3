@@ -20,7 +20,7 @@ const awsConfig = {
 // console.log('Access Key ID exists:', !!process.env.AWS_ACCESS_KEY_ID);
 // console.log('Secret Access Key exists:', !!process.env.AWS_SECRET_ACCESS_KEY);
 // console.log('SQS Queue URL exists:', !!process.env.SQS_QUEUE_URL);
-console.log('EventBridge Bus Name:', process.env.EVENTBRIDGE_BUS_NAME || 'default');
+// console.log('EventBridge Bus Name:', process.env.EVENTBRIDGE_BUS_NAME || 'default');
 
 // Initialize AWS clients
 const sqsClient = new SQSClient(awsConfig);
